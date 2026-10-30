@@ -1,17 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // S.E.C. Protocol - HUD DE PRUEBA (temporal).
-// Muestra la vida y la stamina del jugador en la esquina de la pantalla.
+// Muestra la vida, la stamina y las balas del jugador en la esquina de la pantalla.
 // Solo para probar mientras no existe el HUD real. Se borra al final.
 public class DebugHUD : MonoBehaviour
 {
-    [Tooltip("Si se deja vac�o, lo busca solo por el tag Player")]
+    [Tooltip("Si se deja vacío, lo busca solo por el tag Player")]
     public Health playerHealth;
 
-    [Tooltip("Si se deja vac�o, lo busca solo por el tag Player")]
+    [Tooltip("Si se deja vacío, lo busca solo por el tag Player")]
     public PlayerController playerController;
 
     private GUIStyle _style;
+
+    // NUEVO: armas y munición
+    private WeaponSwitching _weapons;
+    private PlayerAmmo _ammo;
 
     private void Start()
     {
@@ -21,10 +25,15 @@ public class DebugHUD : MonoBehaviour
         {
             if (playerHealth == null) playerHealth = player.GetComponent<Health>();
             if (playerController == null) playerController = player.GetComponent<PlayerController>();
+
+            // NUEVO: el WeaponSwitching está en un hijo (WeaponHolder, en la mano)
+            // y PlayerAmmo está en el Player
+            _weapons = player.GetComponentInChildren<WeaponSwitching>();
+            _ammo = player.GetComponent<PlayerAmmo>();
         }
         else
         {
-            Debug.LogWarning("DebugHUD: no encontr� ning�n objeto con el tag Player.");
+            Debug.LogWarning("DebugHUD: no encontré ningún objeto con el tag Player.");
         }
     }
 
@@ -37,7 +46,7 @@ public class DebugHUD : MonoBehaviour
             _style.normal.textColor = Color.white;
         }
 
-        GUILayout.BeginArea(new Rect(20, 20, 500, 200));
+        GUILayout.BeginArea(new Rect(20, 20, 600, 250));
 
         if (playerHealth != null)
         {
@@ -49,7 +58,16 @@ public class DebugHUD : MonoBehaviour
         {
             string agotado = playerController.IsExhausted ? "  (agotado)" : "";
             GUILayout.Label($"Stamina: {playerController.StaminaNormalized * 100f:0}%{agotado}", _style);
-            GUILayout.Label($"Agachado: {(playerController.IsCrouching ? "s�" : "no")}", _style);
+            GUILayout.Label($"Agachado: {(playerController.IsCrouching ? "sí" : "no")}", _style);
+        }
+
+        // NUEVO: arma actual y balas (cargador / reserva)
+        if (_weapons != null && _weapons.CurrentGun != null)
+        {
+            Gun gun = _weapons.CurrentGun;
+            string reserva = gun.infiniteReserve ? "∞" : (_ammo != null ? _ammo.Reserve.ToString() : "0");
+            string recargando = gun.IsReloading ? "  (recargando...)" : "";
+            GUILayout.Label($"Arma: {gun.weaponName}   Balas: {gun.CurrentAmmo} / {reserva}{recargando}", _style);
         }
 
         GUILayout.EndArea();

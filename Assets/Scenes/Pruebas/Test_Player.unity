@@ -957,7 +957,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1442111188}
   - component: {fileID: 1442111187}
-  - component: {fileID: 1442111189}
   m_Layer: 0
   m_Name: DEBUG
   m_TagString: Untagged
@@ -994,23 +993,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1442111189
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1442111186}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 550e3a603bfe75b4f88ecf759741ee97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damage: 20
-  range: 100
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 759
 --- !u!1 &1479566555
 GameObject:
   m_ObjectHideFlags: 0
@@ -1673,6 +1655,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7869598027282629088, guid: 8de7b37c49043144f81b981798d48dbd,
+        type: 3}
+      propertyPath: fireRate
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8302502314950405908, guid: 8de7b37c49043144f81b981798d48dbd,
+        type: 3}
+      propertyPath: MoveSpeed
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8302502314950405908, guid: 8de7b37c49043144f81b981798d48dbd,
+        type: 3}
+      propertyPath: SprintSpeed
+      value: 7.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
