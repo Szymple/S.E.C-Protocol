@@ -1,8 +1,10 @@
+using System.Collections; // NUEVO: para la corrutina del láser
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
+[RequireComponent(typeof(LineRenderer))] // NUEVO: el láser
 public class EnemySoldado : MonoBehaviour
 {
     [Header("Movimiento")]
@@ -41,11 +43,16 @@ public class EnemySoldado : MonoBehaviour
     [Tooltip("Con qué capas chocan sus balas. Quitar la capa Enemy")]
     public LayerMask hitMask = ~0;
 
+    // NUEVO: láser
+    [Header("Láser")]
+    [Tooltip("Cuánto tiempo se ve el láser")]
+    public float shotDuration = 0.07f;
+
     [Header("Muerte")]
     [Tooltip("Segundos antes de desaparecer al morir")]
     public float deathDelay = 0.3f;
 
-    // ESTADO de la IA: lo que intenta hacer ahora mismo (French, 2023)
+    // ESTADO de la IA: lo que intenta hacer ahora mismo
     [Header("Debug (solo para ver)")]
     [SerializeField] private State _state = State.Chase;
     [SerializeField] private int _ammo;
@@ -56,6 +63,8 @@ public class EnemySoldado : MonoBehaviour
     // componentes propios
     private NavMeshAgent _agent;
     private Health _health;
+    private LineRenderer _laserLine;            // NUEVO: el láser
+    private WaitForSeconds _shotDurationWait;   // NUEVO: cuánto se ve el láser
 
     // jugador
     private Transform _player;
@@ -72,6 +81,11 @@ public class EnemySoldado : MonoBehaviour
         _agent = GetComponent<NavMeshAgent>();
         _health = GetComponent<Health>();
 
+        // NUEVO: tomar el láser y empezar con él apagado
+        _laserLine = GetComponent<LineRenderer>();
+        _laserLine.enabled = false;
+        _shotDurationWait = new WaitForSeconds(shotDuration);
+
         // Escuchar el "timbre" de muerte de mi propia vida
         _health.OnDeath.AddListener(HandleDeath);
     }
@@ -83,7 +97,7 @@ public class EnemySoldado : MonoBehaviour
         _ammo = magazineSize;
 
         // Encontrar al jugador UNA vez y guardar la referencia
-        // ("How to find the player", French, 2023)
+        
         GameObject playerObj = GameObject.FindWithTag("Player");
         if (playerObj != null)
         {
@@ -108,7 +122,7 @@ public class EnemySoldado : MonoBehaviour
             return;
         }
 
-        // ENTRADAS: lo que hace cambiar de estado (French, 2023)
+        // ENTRADAS: lo que hace cambiar de estado 
         float distance = Vector3.Distance(transform.position, _player.position);
         bool canSeePlayer = distance <= attackRange && HasLineOfSight();
 
@@ -118,7 +132,7 @@ public class EnemySoldado : MonoBehaviour
     }
 
     // MOVIMIENTO (con obstáculos hace falta pathfinding: NavMesh)
-    
+
     private void UpdateMovement(float distance, bool canSeePlayer)
     {
         if (canSeePlayer && distance <= stopDistance)
@@ -200,12 +214,17 @@ public class EnemySoldado : MonoBehaviour
         Vector3 direction = (GetPlayerAimPoint() - origin).normalized;
 
         // Margen de error: punto al azar dentro de una esfera, multiplicado
-        // por el margen, para que algunas balas fallen (French, 2023)
+        // por el margen, para que algunas balas fallen
         direction = (direction + Random.insideUnitSphere * inaccuracy).normalized;
+
+        // NUEVO: el láser empieza en el FirePoint y se muestra un instante
+        _laserLine.SetPosition(0, origin);
+        StartCoroutine(ShotEffect());
 
         if (Physics.Raycast(origin, direction, out RaycastHit hit, attackRange, hitMask, QueryTriggerInteraction.Ignore))
         {
             Debug.DrawLine(origin, hit.point, Color.red, 0.2f);
+            _laserLine.SetPosition(1, hit.point); // NUEVO: el láser termina donde pegó
 
             if (IsPlayer(hit.transform) && _playerHealth != null)
             {
@@ -215,7 +234,16 @@ public class EnemySoldado : MonoBehaviour
         else
         {
             Debug.DrawRay(origin, direction * attackRange, Color.yellow, 0.2f);
+            _laserLine.SetPosition(1, origin + direction * attackRange); // NUEVO: si no pegó, llega hasta el alcance
         }
+    }
+
+    // NUEVO: mostrar el láser un instante y apagarlo
+    private IEnumerator ShotEffect()
+    {
+        _laserLine.enabled = true;
+        yield return _shotDurationWait;
+        _laserLine.enabled = false;
     }
 
     // ¿Hay línea directa hacia el jugador (nada en medio)?
@@ -255,6 +283,7 @@ public class EnemySoldado : MonoBehaviour
         _state = State.Dead;
         StopMoving();
         _agent.enabled = false;
+        _laserLine.enabled = false; // NUEVO: apagar el láser al morir
 
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;
