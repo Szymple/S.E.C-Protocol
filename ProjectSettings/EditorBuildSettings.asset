@@ -5,7 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Extras_PlantillaURP/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Pruebas/Test_Player.unity
+    guid: 4c0c2626578bf2f4bba436e163c7a317
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: acba3fffe4def7d428f8827ec1b44982
   m_configObjects: {}
