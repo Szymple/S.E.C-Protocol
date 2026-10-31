@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 // S.E.C. Protocol - HUD DE PRUEBA (temporal).
-// Muestra la vida, la stamina y las balas del jugador en la esquina de la pantalla.
+// Muestra la vida, la stamina, las balas y la oleada en la esquina de la pantalla.
 // Solo para probar mientras no existe el HUD real. Se borra al final.
 public class DebugHUD : MonoBehaviour
 {
@@ -16,6 +16,9 @@ public class DebugHUD : MonoBehaviour
     // NUEVO: armas y munición
     private WeaponSwitching _weapons;
     private PlayerAmmo _ammo;
+
+    // NUEVO (oleadas): el WaveManager de la escena
+    private WaveManager _waves;
 
     private void Start()
     {
@@ -35,6 +38,9 @@ public class DebugHUD : MonoBehaviour
         {
             Debug.LogWarning("DebugHUD: no encontré ningún objeto con el tag Player.");
         }
+
+        // NUEVO (oleadas): buscar el WaveManager en la escena
+        _waves = FindObjectOfType<WaveManager>();
     }
 
     private void OnGUI()
@@ -46,7 +52,8 @@ public class DebugHUD : MonoBehaviour
             _style.normal.textColor = Color.white;
         }
 
-        GUILayout.BeginArea(new Rect(20, 20, 600, 250));
+        // NUEVO (oleadas): área más alta para que quepa la línea de la oleada
+        GUILayout.BeginArea(new Rect(20, 20, 600, 300));
 
         if (playerHealth != null)
         {
@@ -68,6 +75,19 @@ public class DebugHUD : MonoBehaviour
             string reserva = gun.infiniteReserve ? "∞" : (_ammo != null ? _ammo.Reserve.ToString() : "0");
             string recargando = gun.IsReloading ? "  (recargando...)" : "";
             GUILayout.Label($"Arma: {gun.weaponName}   Balas: {gun.CurrentAmmo} / {reserva}{recargando}", _style);
+        }
+
+        // NUEVO (oleadas): victoria, cuenta regresiva o enemigos restantes
+        if (_waves != null)
+        {
+            string texto;
+            if (_waves.HasWon && _waves.State == WaveManager.SpawnState.STOPPED)
+                texto = "¡VICTORIA! Oleada 10 completada";
+            else if (_waves.State == WaveManager.SpawnState.COUNTING)
+                texto = $"Oleada {_waves.NextWave} en {Mathf.CeilToInt(_waves.WaveCountdown)}...";
+            else
+                texto = $"Oleada {_waves.CurrentWave}   Enemigos restantes: {_waves.EnemiesRemaining}";
+            GUILayout.Label(texto, _style);
         }
 
         GUILayout.EndArea();
