@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Events;
 
 // S.E.C. Protocol - WaveManager (sistema de oleadas)
-// Adaptado al GDD de S.E.C. Protocol:
 //   - Oleadas infinitas con la fórmula E(n) = 10 + (n-1) + piso((n-1)/2) + R
 //   - Máximo 10 enemigos vivos a la vez (el resto espera en la cola)
 //   - +2 HP a los enemigos cada 2 oleadas (Health.SetMaxHealth)
@@ -42,6 +41,7 @@ public class WaveManager : MonoBehaviour
     public UnityEvent<int> OnWaveStarted;    // manda el número de oleada
     public UnityEvent<int> OnWaveCompleted;  // manda el número de oleada
     public UnityEvent OnVictory;
+    public UnityEvent OnEnemyKilled;          // NUEVO (stats): cada vez que muere un enemigo
 
     [Header("Debug (solo para ver)")]
     [SerializeField] private SpawnState state = SpawnState.COUNTING;
@@ -160,9 +160,10 @@ public class WaveManager : MonoBehaviour
     {
         aliveEnemies.Remove(enemy);
         killedThisWave++;
+        OnEnemyKilled.Invoke(); // NUEVO (stats): avisar que murió un enemigo
     }
 
-    // Fin de la oleada: aquí sube la dificultad 
+    // Fin de la oleada: aquí sube la dificultad
     private void WaveCompleted()
     {
         Debug.Log($"Oleada {currentWave} completada");
@@ -222,5 +223,17 @@ public class WaveManager : MonoBehaviour
     private void DebugContinue()
     {
         ContinueEndless();
+    }
+
+    [ContextMenu("Prueba: ganar ya")]
+    private void DebugWinNow()
+    {
+        StopAllCoroutines();                       
+
+        foreach (Health enemy in aliveEnemies.ToArray())
+            enemy.TakeDamage(enemy.CurrentHealth); 
+
+        currentWave = victoryWave;                 
+        WaveCompleted();                           
     }
 }

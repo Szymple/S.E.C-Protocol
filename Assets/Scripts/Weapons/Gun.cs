@@ -40,6 +40,11 @@ public class Gun : MonoBehaviour
     [SerializeField] private int currentAmmo = -1;
     [SerializeField] private bool isReloading = false;
 
+    // NUEVO (stats): avisos para GameStats u otros
+    // static = son de TODAS las armas a la vez (rifle y pistola)
+    public static event System.Action OnShotFired;
+    public static event System.Action OnShotHit;
+
     // Datos para el HUD y el cambio de arma
     public int CurrentAmmo => currentAmmo;
     public int MaxAmmo => maxAmmo;
@@ -73,6 +78,8 @@ public class Gun : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f) return; // NUEVO (pausa): no disparar en pausa
+
         if (isReloading) return;
 
         // RECARGA
@@ -101,7 +108,7 @@ public class Gun : MonoBehaviour
         }
         else if (canHoldToFire && held && !pressed && Time.time >= nextTimeToFire)
         {
-            // Mantener = fireRate balas por segundo (Brackeys)
+            // Mantener = fireRate balas por segundo 
             Shoot();
             nextTimeToFire = Time.time + 1f / fireRate;
         }
@@ -110,6 +117,7 @@ public class Gun : MonoBehaviour
     private void Shoot()
     {
         currentAmmo--;
+        OnShotFired?.Invoke(); // NUEVO (stats): avisar que se disparó
         StartCoroutine(ShotEffect());
 
         // PASO 1: apuntar desde la cámara, por el centro de la pantalla
@@ -134,6 +142,7 @@ public class Gun : MonoBehaviour
             if (target != null)
             {
                 target.TakeDamage(damage);
+                OnShotHit?.Invoke(); // NUEVO (stats): avisar que le dio a algo con vida
             }
         }
         else
