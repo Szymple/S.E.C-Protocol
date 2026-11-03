@@ -98,7 +98,7 @@ public class Health : MonoBehaviour
         OnDeath.Invoke();
     }
 
-    // ---- Botones de prueba: menú ⋮ del componente en el Inspector (en Play) ----
+    // Botones de prueba: menú ⋮ del componente en el Inspector (en Play)
     [ContextMenu("Prueba: recibir 10 de daño")]
     private void DebugDamage()
     {
